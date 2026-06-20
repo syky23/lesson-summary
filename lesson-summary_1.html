@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson Summary — Jakub Sýkora</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1a1a;
+    --ink-muted: #6b6b6b;
+    --ink-faint: #b0b0b0;
+    --surface: #ffffff;
+    --surface-2: #f7f6f3;
+    --surface-3: #f0efe9;
+    --accent: #2a5cff;
+    --accent-light: #eef1ff;
+    --success: #1a7a4a;
+    --success-bg: #edfaf3;
+    --danger: #c0392b;
+    --border: #e4e3dc;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--surface-2);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .app { max-width: 640px; margin: 0 auto; }
+
+  .header { margin-bottom: 2.5rem; }
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 1rem;
+  }
+
+  .api-row { display: flex; gap: 8px; align-items: center; }
+  .api-status { font-size: 12px; color: var(--ink-muted); margin-top: 6px; }
+  .api-status.ok { color: var(--success); }
+  .api-status.error { color: var(--danger); }
+
+  .field { margin-bottom: 1rem; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    margin-bottom: 5px;
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .field-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  select,
+  textarea {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+  }
+  textarea { resize: vertical; line-height: 1.6; }
+
+  /* Language toggle */
+  .lang-toggle {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--surface-2);
+  }
+  .lang-btn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .lang-btn.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .lang-btn:not(.active):hover {
+    background: var(--surface-3);
+    color: var(--ink);
+  }
+
+  .upload-area {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--surface-2);
+    position: relative;
+  }
+  .upload-area:hover, .upload-area.dragover {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .upload-icon { font-size: 24px; margin-bottom: 6px; }
+  .upload-label { font-size: 13px; font-weight: 500; color: var(--ink-muted); }
+  .upload-sub { font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
+  .upload-area.has-file {
+    border-style: solid;
+    border-color: var(--success);
+    background: var(--success-bg);
+  }
+  .upload-area.has-file .upload-label { color: var(--success); }
+
+  .or-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 12px 0;
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .or-divider::before, .or-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .btn-generate {
+    width: 100%;
+    padding: 13px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: -0.01em;
+    margin-top: 0.25rem;
+  }
+  .btn-generate:hover { opacity: 0.9; }
+  .btn-generate:active { transform: scale(0.99); }
+  .btn-generate:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .status-bar {
+    font-size: 13px;
+    color: var(--ink-muted);
+    text-align: center;
+    min-height: 20px;
+    margin-top: 10px;
+  }
+  .status-bar.error { color: var(--danger); }
+
+  .output-card {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+  .output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-3);
+  }
+  .output-header-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .btn-copy {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-copy:hover { background: var(--surface-2); color: var(--ink); }
+  .btn-copy.copied { color: var(--success); border-color: var(--success); }
+
+  .output-body {
+    padding: 1.5rem;
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .btn-save {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .btn-save:hover { background: var(--surface-3); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: -2px;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <p class="header-eyebrow">englishwithjakub</p>
+    <h1>Lesson Summary</h1>
+  </div>
+
+  <!-- API Key -->
+  <div class="card">
+    <p class="card-title">API kľúč</p>
+    <div class="api-row">
+      <input type="password" id="api-key" placeholder="sk-ant-api03-..." style="flex:1;" />
+      <button class="btn-save" onclick="saveKey()">Uložiť</button>
+    </div>
+    <p class="api-status" id="key-status"></p>
+  </div>
+
+  <!-- Student -->
+  <div class="card">
+    <p class="card-title">Študent</p>
+
+    <div class="field">
+      <label>Jazyk emailu</label>
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="lang-sk" onclick="setLang('sk')">🇸🇰 Slovenčina</button>
+        <button class="lang-btn" id="lang-en" onclick="setLang('en')">🇬🇧 English</button>
+      </div>
+    </div>
+
+    <div class="field field-row">
+      <div>
+        <label>Meno / Name</label>
+        <input type="text" id="student-name" placeholder="napr. Lukáš" />
+      </div>
+      <div>
+        <label id="gender-label">Pohlavie</label>
+        <select id="gender">
+          <option value="male">muž / male</option>
+          <option value="female">žena / female</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field field-row">
+      <div>
+        <label id="next-label">Najbližší termín</label>
+        <input type="text" id="next-date" placeholder="napr. budúci piatok" />
+      </div>
+      <div>
+        <label id="hw-label">Úloha (voliteľné)</label>
+        <input type="text" id="homework" placeholder="napr. precvič which/who" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Transcript -->
+  <div class="card">
+    <p class="card-title">Prepis lekcie</p>
+    <div class="upload-area" id="upload-area">
+      <input type="file" id="file-input" accept=".docx" onchange="handleFile(this.files[0])" />
+      <div class="upload-icon">📄</div>
+      <p class="upload-label" id="upload-label">Nahraj Gemini Notes (.docx)</p>
+      <p class="upload-sub">Klikni alebo pretiahni súbor sem</p>
+    </div>
+    <div class="or-divider">alebo</div>
+    <div class="field">
+      <label>Vlož text prepisu manuálne</label>
+      <textarea id="transcript" rows="8" placeholder="Sem vlož obsah z Gemini Notes..."></textarea>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="gen-btn" onclick="generate()">
+    Vygenerovať email
+  </button>
+  <p class="status-bar" id="status"></p>
+
+  <div class="output-card" id="output-card">
+    <div class="output-header">
+      <span class="output-header-title">Hotový email</span>
+      <button class="btn-copy" id="copy-btn" onclick="copyEmail()">Kopírovať</button>
+    </div>
+    <div class="output-body" id="output-body"></div>
+  </div>
+
+</div>
+
+<script>
+let currentLang = 'sk';
+
+// ── Language toggle ───────────────────────────────────────────
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('lang-sk').classList.toggle('active', lang === 'sk');
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+
+  const isSk = lang === 'sk';
+  document.getElementById('next-date').placeholder = isSk ? 'napr. budúci piatok' : 'e.g. next Friday';
+  document.getElementById('homework').placeholder = isSk ? 'napr. precvič which/who' : 'e.g. practice which/who';
+  document.getElementById('student-name').placeholder = isSk ? 'napr. Lukáš' : 'e.g. Jean Rafael';
+  document.getElementById('next-label').textContent = isSk ? 'Najbližší termín' : 'Next session';
+  document.getElementById('hw-label').textContent = isSk ? 'Úloha (voliteľné)' : 'Homework (optional)';
+  document.getElementById('gen-btn').textContent = isSk ? 'Vygenerovať email' : 'Generate email';
+}
+
+// ── API key ───────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('js_api_key');
+  if (saved) {
+    document.getElementById('api-key').value = saved;
+    document.getElementById('key-status').textContent = '✓ Kľúč uložený';
+    document.getElementById('key-status').className = 'api-status ok';
+  }
+});
+
+function saveKey() {
+  const key = document.getElementById('api-key').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    document.getElementById('key-status').textContent = 'Kľúč musí začínať sk-ant-...';
+    document.getElementById('key-status').className = 'api-status error';
+    return;
+  }
+  localStorage.setItem('js_api_key', key);
+  document.getElementById('key-status').textContent = '✓ Uložený — pri ďalšom otvorení sa načíta automaticky';
+  document.getElementById('key-status').className = 'api-status ok';
+}
+
+// ── File upload ───────────────────────────────────────────────
+const uploadArea = document.getElementById('upload-area');
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadArea.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+
+function handleFile(file) {
+  if (!file || !file.name.endsWith('.docx')) {
+    alert('Nahraj .docx súbor z Gemini Notes.');
+    return;
+  }
+  const label = document.getElementById('upload-label');
+  label.textContent = '⏳ Čítam súbor...';
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    mammoth.extractRawText({ arrayBuffer: e.target.result })
+      .then(result => {
+        document.getElementById('transcript').value = result.value;
+        uploadArea.classList.add('has-file');
+        label.textContent = '✓ ' + file.name;
+      })
+      .catch(() => { label.textContent = 'Chyba pri čítaní súboru'; });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── Prompts ───────────────────────────────────────────────────
+function getSystemPrompt(lang) {
+  if (lang === 'sk') {
+    return `Si asistent anglického lektora Jakuba Sýkoru, ktorý píše stručné a priateľské súhrnné emaily po lekcii angličtiny pre svojich slovenských klientov.
+
+Tvoja úloha: Na základe prepisu lekcie vygenerovať súhrnný email podľa presného šablónu. Email musí byť:
+- v slovenčine (okrem anglických výrazov)
+- priateľský, koučovský tón — nie "učiteľský"
+- stručný a jasný
+
+ŠABLÓNA:
+
+Ahoj [MENO], posielam súhrn dnešnej lekcie:
+
+téma: [jedna veta — čomu sa venovala lekcia]
+
+výrazy: [vo formáte: anglický výraz (slovenský preklad); ďalší výraz (preklad)]
+
+opravy: [ak boli jazykové opravy — stručne, max 2-3 vety. Ak žiadne neboli, sekciu vynechaj úplne.]
+
+najbližšie: [čo je naplánované na ďalšiu lekciu]
+
+úloha: [ak bola zadaná — ak nie, sekciu vynechaj]
+
+tip: [jeden praktický tip špecifický k dnešnej téme — nie generické rady]
+
+[záverečná veta — priateľská, variuj podľa kontextu]
+
+Jakub
+
+PRAVIDLÁ:
+- "opravy" a "úloha" len ak máš obsah z prepisu
+- Bez markdown (žiadne *, #, **)
+- Vráť IBA text emailu`;
+  } else {
+    return `You are an assistant to Jakub Sýkora, an English tutor, who writes brief and friendly post-lesson summary emails to his students.
+
+Task: Based on the lesson transcript, generate a summary email following the exact template below. The email must be:
+- in English
+- friendly, coaching tone — not formal or "teacher-like"
+- concise and clear
+- the vocabulary section should include French translations if they were mentioned during the lesson (check the transcript)
+
+TEMPLATE:
+
+Hi [NAME], here's a summary of today's lesson:
+
+topic: [one sentence — what the lesson was about]
+
+vocabulary: [format: English word/phrase (French translation if mentioned, otherwise omit translation); next item]
+
+corrections: [if there were any language corrections — briefly, max 2-3 sentences. If none, omit this section entirely.]
+
+next time: [what's planned for the next lesson]
+
+homework: [if assigned — if not, omit this section]
+
+tip: [one practical tip specific to today's topic — not generic advice like "practice every day"]
+
+[closing sentence — friendly, vary it based on context]
+
+Jakub
+
+RULES:
+- Include "corrections" and "homework" ONLY if there is relevant content in the transcript
+- No markdown (no *, #, **)
+- Return ONLY the email text, nothing else`;
+  }
+}
+
+function getUserPrompt(lang, name, gender, nextDate, homework, transcript) {
+  if (lang === 'sk') {
+    return `Meno: ${name}
+Pohlavie: ${gender === 'male' ? 'muž' : 'žena'}
+Najbližší termín: ${nextDate || 'nešpecifikovaný'}
+${homework ? 'Zadaná úloha: ' + homework : ''}
+
+Prepis lekcie:
+${transcript}`;
+  } else {
+    return `Student name: ${name}
+Gender: ${gender}
+Next session: ${nextDate || 'not specified'}
+${homework ? 'Assigned homework: ' + homework : ''}
+
+Lesson transcript:
+${transcript}`;
+  }
+}
+
+// ── Generate ──────────────────────────────────────────────────
+async function generate() {
+  const apiKey = localStorage.getItem('js_api_key') || document.getElementById('api-key').value.trim();
+  const name = document.getElementById('student-name').value.trim();
+  const gender = document.getElementById('gender').value;
+  const nextDate = document.getElementById('next-date').value.trim();
+  const homework = document.getElementById('homework').value.trim();
+  const transcript = document.getElementById('transcript').value.trim();
+
+  const status = document.getElementById('status');
+  const outputCard = document.getElementById('output-card');
+
+  if (!apiKey) { status.textContent = 'Zadaj a ulož API kľúč.'; status.className = 'status-bar error'; return; }
+  if (!name) { status.textContent = currentLang === 'sk' ? 'Zadaj meno študenta.' : 'Enter student name.'; status.className = 'status-bar error'; return; }
+  if (!transcript) { status.textContent = currentLang === 'sk' ? 'Nahraj prepis alebo vlož text.' : 'Upload transcript or paste text.'; status.className = 'status-bar error'; return; }
+
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>' + (currentLang === 'sk' ? 'Generujem...' : 'Generating...');
+  status.textContent = '';
+  status.className = 'status-bar';
+  outputCard.style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-calls': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: getSystemPrompt(currentLang),
+        messages: [{ role: 'user', content: getUserPrompt(currentLang, name, gender, nextDate, homework, transcript) }]
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      status.textContent = 'Chyba: ' + data.error.message;
+      status.className = 'status-bar error';
+    } else if (data.content && data.content[0]) {
+      document.getElementById('output-body').textContent = data.content[0].text.trim();
+      outputCard.style.display = 'block';
+      outputCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  } catch (err) {
+    status.textContent = currentLang === 'sk' ? 'Chyba pripojenia. Skontroluj internet.' : 'Connection error. Check your internet.';
+    status.className = 'status-bar error';
+  }
+
+  btn.disabled = false;
+  btn.textContent = currentLang === 'sk' ? 'Vygenerovať email' : 'Generate email';
+}
+
+// ── Copy ──────────────────────────────────────────────────────
+function copyEmail() {
+  const text = document.getElementById('output-body').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ ' + (currentLang === 'sk' ? 'Skopírované' : 'Copied');
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = currentLang === 'sk' ? 'Kopírovať' : 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
